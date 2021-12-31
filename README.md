@@ -1,3 +1,3 @@
-# Java-Youtube-Downloader
+# Java Youtube Downloader
 
 TODO: ALL :D
