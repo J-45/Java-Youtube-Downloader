@@ -1,3 +1,7 @@
 # Java Youtube Downloader
 
-TODO: ALL :D
+TODO:
+  - parse youtube html
+  - download video
+  - download audio
+  - join video and audio
