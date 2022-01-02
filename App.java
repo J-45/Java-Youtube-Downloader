@@ -1,70 +1,41 @@
-// import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
+import java.io.IOException;
 // import java.util.regex.*;
+// import java.util.Arrays;
 
-public class App {
+public class AppTest {
 
-    public static void main(String[] urls) throws Exception {
-        // System.out.println(Arrays.toString(urls));
-        
-        String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
-        String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
+    String[] testUrls = {"","https://stackoverflow.com/", "https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
 
-        for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; ++youtubeUrlsLoop)
-        {   
-            downloadVideo(youtubeUrls[youtubeUrlsLoop]);
-        }
+    String[] goodUrls = {"https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
+
+    String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx&index=1","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx&index=2"};
+
+    String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
+
+    @Test
+    @DisplayName("get Url In Arg")
+    void keepYoutubeUrlsOnly_Test() {
+        assertArrayEquals(goodUrls, App.keepYoutubeUrlsOnly(youtubeUrlRegex, testUrls));
     }
 
-    public static String[] keepYoutubeUrlsOnly(String youtubeUrlRegex, String[] urls) {
-        int numberOfValidUrls = countValidUrls(youtubeUrlRegex, urls);
-        int addedUrl = 0;
-        String[] youtubeUrls = new String[numberOfValidUrls];
-
-        for (int index = 0; index < urls.length; ++index)
-        {   
-            String url = urls[index];
-            if (url.matches(youtubeUrlRegex))
-            {
-                youtubeUrls[addedUrl] = url;
-                addedUrl++;
-            }
-        }
-        return youtubeUrls;
+    @Test
+    @DisplayName("count valid url in args with regex")
+    void countValidUrls_Test() {
+        assertEquals(4, App.countValidUrls(youtubeUrlRegex, testUrls));
     }
 
-    public static int countValidUrls(String youtubeUrlRegex,String[] args) {
-        int goodUrlsCounter = 0;
-        for (int index = 0; index < args.length; ++index)
-        {   
-            String url = args[index];
-            if (url.matches(youtubeUrlRegex)){
-                // System.out.println("urls[" + index + "]: " + url);
-                goodUrlsCounter++;
-            }
-        }
-        return goodUrlsCounter;
+    @Test
+    @DisplayName("get html content of page url")
+    void fetchWebpage_Test() throws IOException, InterruptedException {
+        assertEquals("200 OK", App.fetchWebpage("https://httpstat.us/200"));
     }
 
-    public static String[] getUrlsFromplaylist(String url) {
-        String[] foundUrls = {""};
-        return foundUrls;
+    @Test
+    @DisplayName("get urls from html content")
+    void getUrlsFromplaylist_Test() throws IOException, InterruptedException {
+        assertArrayEquals(goodPlaylistUrls, App.getUrlsFromplaylist("https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"));
     }
 
-    public static boolean downloadVideo(String url) {
-        String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
-
-        if (url.matches(youtubePlaylistUrlRegex)){
-            System.out.println("PLAYLIST: " + url);
-            String[] playlistUrls = getUrlsFromplaylist(url);
-            for (int playlistLoopCount = 0; playlistLoopCount < playlistUrls.length; ++playlistLoopCount)
-            {   
-                String singlePlaylistUrl = playlistUrls[playlistLoopCount];
-                downloadVideo(singlePlaylistUrl);
-            }
-        }
-        else{
-            System.out.println("URL: " + url);
-        }
-        return true;
-    }
 }
