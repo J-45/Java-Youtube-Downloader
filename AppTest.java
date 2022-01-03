@@ -10,9 +10,16 @@ public class AppTest {
 
     String[] goodUrls = {"https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
 
-    String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx&index=1","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx&index=2"};
+    String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"};
 
     String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
+
+    @Test
+    @DisplayName("test main")
+    void main_Test()  throws Exception{
+        App.main(testUrls);
+        assertEquals(1, 1);
+    }
 
     @Test
     @DisplayName("get Url In Arg")
@@ -36,6 +43,12 @@ public class AppTest {
     @DisplayName("get urls from html content")
     void getUrlsFromplaylist_Test() throws IOException, InterruptedException {
         assertArrayEquals(goodPlaylistUrls, App.getUrlsFromplaylist("https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"));
+    }
+
+    @Test
+    @DisplayName("get playlist id from playlist url")
+    void getPlayslistId_Test() {
+        assertEquals("PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx", App.getPlayslistId("https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"));
     }
 
 }
