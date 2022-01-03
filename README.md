@@ -1,8 +1,7 @@
 # Java Youtube Downloader
 
 TODO:
-  - get playlist id
-  - get urls from playlist
+  - get video & audio urls from video
   - download video
   - download audio
   - join video and audio
