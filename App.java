@@ -1,24 +1,48 @@
 // import java.util.Arrays;
-// import java.util.regex.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.*;
+
 public class App {
 
-    public static void main(String[] urls) throws Exception, IOException {
+    public static void main(String[] urls) throws Exception, IOException
+    {
         // System.out.println(Arrays.toString(urls));
         String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
+        String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
+
         String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
 
-        for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; ++youtubeUrlsLoop)
+
+
+        for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; youtubeUrlsLoop = youtubeUrlsLoop + 1)
         {   
-            downloadVideo(youtubeUrls[youtubeUrlsLoop]);
+            System.out.println("loop 1:"+youtubeUrlsLoop);
+
+            if (youtubeUrls[youtubeUrlsLoop].matches(youtubePlaylistUrlRegex))
+            {
+                System.out.println("PLAYLIST: " + youtubeUrls[youtubeUrlsLoop]);
+                String[] playlistUrls = getUrlsFromplaylist(youtubeUrls[youtubeUrlsLoop]);
+                for (int playlistLoopCount = 0; playlistLoopCount < playlistUrls.length; playlistLoopCount++)
+                {   
+                    System.out.println("loop 2:"+playlistLoopCount);
+                    String singlePlaylistUrl = playlistUrls[playlistLoopCount];
+                    downloadVideo(singlePlaylistUrl);
+                }
+            }
+            else{
+                System.out.println("URL: " + youtubeUrls[youtubeUrlsLoop]);
+            }
         }
     }
 
-    public static String[] keepYoutubeUrlsOnly(String youtubeUrlRegex, String[] urls) {
+    public static String[] keepYoutubeUrlsOnly(String youtubeUrlRegex, String[] urls)
+    {
         int numberOfValidUrls = countValidUrls(youtubeUrlRegex, urls);
         int addedUrl = 0;
         String[] youtubeUrls = new String[numberOfValidUrls];
@@ -35,7 +59,8 @@ public class App {
         return youtubeUrls;
     }
 
-    public static int countValidUrls(String youtubeUrlRegex,String[] args) {
+    public static int countValidUrls(String youtubeUrlRegex,String[] args)
+    {
         int goodUrlsCounter = 0;
         for (int index = 0; index < args.length; ++index)
         {   
@@ -48,43 +73,54 @@ public class App {
         return goodUrlsCounter;
     }
 
-    public static String fetchWebpage(String url) throws IOException, InterruptedException {
+    public static String fetchWebpage(String url) throws IOException, InterruptedException
+    {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .setHeader("Accept", "*/*")
+                .setHeader("User-Agent", "curl/7.68.0")
+                .setHeader("Accept-Encoding", "")
+                .setHeader("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
+                .setHeader("Content-Type", "")
                 .GET() // GET is default
                 .build();
-
         HttpResponse<String> response = client.send(request,
                 HttpResponse.BodyHandlers.ofString());
-
-        System.out.println(url);
-        System.out.println(response.body());
         return response.body();
     }
 
-    public static String[] getUrlsFromplaylist(String url) throws IOException, InterruptedException{
-        String htmlContent = fetchWebpage(url);
-        String[] foundUrls = htmlContent.split(" ", 2);
-
-        return foundUrls;
+    public static String getPlayslistId(String url)
+    {
+        String playlistId = "";
+        Pattern pattern = Pattern.compile("watch\\?v=[\\w-]+&list=(\\w+)");
+        Matcher matcher = pattern.matcher(url);
+        // System.out.println(url); // Debug
+        if (matcher.find())
+        {   
+            playlistId = matcher.group(1);
+            
+        }else{
+            playlistId = "none";
+        }
+        return playlistId;
     }
 
-    public static boolean downloadVideo(String url) throws IOException, InterruptedException {
-        String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
+    public static String[] getUrlsFromplaylist(String url) throws IOException, InterruptedException
+    {
+        List<String> allMatches = new ArrayList<String>();
+        String playlisId = getPlayslistId(url);
+        String htmlContent = fetchWebpage("https://www.youtube.com/playlist?list=" + playlisId);
+        Matcher matcher = Pattern.compile("watchEndpoint\":\\{\"videoId\":\"([\\w-]+)\",\"playlistId\":\"\\w+\",\"index").matcher(htmlContent);
+        while (matcher.find()) {
+            allMatches.add("https://www.youtube.com/watch?v="+matcher.group(1)+"&list=" + playlisId);
+        }
+        return allMatches.toArray(new String[0]);
+    }
 
-        if (url.matches(youtubePlaylistUrlRegex)){
-            System.out.println("PLAYLIST: " + url);
-            String[] playlistUrls = getUrlsFromplaylist(url);
-            for (int playlistLoopCount = 0; playlistLoopCount < playlistUrls.length; ++playlistLoopCount)
-            {   
-                String singlePlaylistUrl = playlistUrls[playlistLoopCount];
-                downloadVideo(singlePlaylistUrl);
-            }
-        }
-        else{
-            System.out.println("URL: " + url);
-        }
+    public static boolean downloadVideo(String url) throws IOException, InterruptedException 
+    {
+        System.out.println("DOWNLOAD: " + url);
         return true;
     }
 }
