@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public class AppTest {
 
-    String[] testUrls = {"","https://stackoverflow.com/", "https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
+    String[] testUrls = {"","https://stackoverflow.com/", "https://www.youtube.com/watch?v=_SnGxw13QxU", "https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
 
-    String[] goodUrls = {"https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
+    String[] goodUrls = {"https://www.youtube.com/watch?v=_SnGxw13QxU", "https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m","https://www.youtube.com/watch?v=3PcIJKd1PKU","https://youtu.be/watch?v=3PcIJKd1PKU","http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
 
     String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"};
 
@@ -18,7 +18,6 @@ public class AppTest {
     @DisplayName("test main")
     void main_Test()  throws Exception{
         App.main(testUrls);
-        assertEquals(1, 1);
     }
 
     @Test
@@ -30,7 +29,7 @@ public class AppTest {
     @Test
     @DisplayName("count valid url in args with regex")
     void countValidUrls_Test() {
-        assertEquals(4, App.countValidUrls(youtubeUrlRegex, testUrls));
+        assertEquals(5, App.countValidUrls(youtubeUrlRegex, testUrls));
     }
 
     @Test
