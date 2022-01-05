@@ -64,7 +64,7 @@ jobs:
 
     - run: |
        mvn package --file pom.xml
-       java -cp org.apache.commons.lang.jar org.apache.commons.lang
+       java -cp /home/runner/work/Java-Youtube-Downloader/Java-Youtube-Downloader/target/commons-lang-2.6.jar org.apache.commons.lang
        javac App.java
 
     #   make release
