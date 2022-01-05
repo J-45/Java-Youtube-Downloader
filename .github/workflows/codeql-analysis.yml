@@ -63,7 +63,8 @@ jobs:
     #    uses a compiled language
 
     - run: |
-       mvn package --file commons-lang-2.6.pom.xml
+       mvn install commons-lang
+       #mvn package --file commons-lang-2.6.pom.xml
        javac App.java
        
     #   make release
