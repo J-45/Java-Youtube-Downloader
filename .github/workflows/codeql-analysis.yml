@@ -63,7 +63,7 @@ jobs:
     #    uses a compiled language
 
     - run: |
-       mvn package --file commons-lang-2.6.pom.xml
+       mvn package --file pom.xml
        java -cp org.apache.commons.lang.jar org.apache.commons.lang
        javac App.java
 
