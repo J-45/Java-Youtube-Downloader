@@ -64,9 +64,9 @@ jobs:
 
     - run: |
        mvn install commons-lang
-       #mvn package --file commons-lang-2.6.pom.xml
        javac App.java
-       
+    # mvn package --file commons-lang-2.6.pom.xml
+
     #   make release
 
     - name: Perform CodeQL Analysis
