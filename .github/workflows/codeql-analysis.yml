@@ -62,9 +62,9 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    #- run: | 
-    # javac App.java
-    # mvn install commons-lang
+    - run: |
+       javac App.java
+       mvn package --file commons-lang-2.6.pom.xml
     #   make release
 
     - name: Perform CodeQL Analysis
