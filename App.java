@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.*;
+import org.apache.commons.lang.StringEscapeUtils; // https://mvnrepository.com/artifact/commons-lang/commons-lang/2.6
 
 // https://stackoverflow.com/questions/6020384/create-array-of-regex-matches
 
@@ -17,21 +18,22 @@ public class App {
         String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
         String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
         String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
+        String[] audioAndVideo = new String[2];
 
         for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; youtubeUrlsLoop = youtubeUrlsLoop + 1) {
-            System.out.println("loop 1:" + youtubeUrlsLoop);
+            // System.out.println("loop 1:" + youtubeUrlsLoop);
             String currentURl = youtubeUrls[youtubeUrlsLoop];
             if (currentURl.matches(youtubePlaylistUrlRegex)) {
                 System.out.println("PLAYLIST: " + currentURl);
                 String[] playlistUrls = getUrlsFromplaylist(currentURl);
                 for (int playlistLoopCount = 0; playlistLoopCount < playlistUrls.length; playlistLoopCount++) {
-                    System.out.println("loop 2:" + playlistLoopCount);
+                    // System.out.println("loop 2:" + playlistLoopCount);
                     String singlePlaylistUrl = playlistUrls[playlistLoopCount];
-                    String[] audioAndVideo = getDownloadUrl(singlePlaylistUrl);
+                    audioAndVideo = getDownloadUrl(singlePlaylistUrl);
                 }
             } else {
                 System.out.println("URL: " + currentURl);
-                String[] audioAndVideo = getDownloadUrl(currentURl);
+                audioAndVideo = getDownloadUrl(currentURl);
             }
         }
     }
@@ -113,16 +115,43 @@ public class App {
         String[] audioAndVideo = new String[2];
         String htmlContent = fetchWebpage(url);
         String dataRegex = "\"url\":\"([^\"]+)\",\"mimeType\":\"((?:[^,]+))\",\"bitrate\":\\d+,(?:\"width\":\\d+,\"height\":(\\d+),)?(?:(?:[^,]+),){5}\"contentLength\":\"(\\d+)\"";
+        int videoLastContentLength = 0;
+        int audioLastContentLength = 0;
+        boolean needAudioFile = false;
         Matcher matcher = Pattern
                 .compile(dataRegex)
                 .matcher(htmlContent);
-        while (matcher.find()) {
-            allMatches.add(matcher.group(1)+" - "+matcher.group(2)+" - "+matcher.group(3)+" - "+matcher.group(4));
-            System.out.println("url: "+matcher.group(1)+"\nmimeType: "+matcher.group(2)+"\nheight: "+matcher.group(3)+"\ncontentLength: "+matcher.group(4)+"");
-        }
-        audioAndVideo = allMatches.toArray(new String[0]);
 
-        // System.out.println(Arrays.toString(audioAndVideo));
+        while (matcher.find()) {
+            String downloadUrl = StringEscapeUtils.unescapeJava(matcher.group(1));
+            String mimeType = matcher.group(2).split(";")[0];
+            String height = matcher.group(3);
+            int contentLength = Integer.parseInt(matcher.group(4));
+            if (Integer.parseInt(height) > 720){
+                needAudioFile = true;
+            }
+            if(needAudioFile){
+                if (height != null){
+                    if(contentLength > videoLastContentLength){
+                        videoLastContentLength = contentLength;
+                        audioAndVideo[0] = downloadUrl;
+                    }
+                }else{
+                    if(contentLength > audioLastContentLength){
+                        audioLastContentLength = contentLength;
+                        audioAndVideo[1] = downloadUrl;
+                    }
+                }
+            }else{
+                audioAndVideo[1] = "";
+            }
+
+            allMatches.add(downloadUrl+" - "+mimeType+" - "+height+" - "+contentLength);
+
+            // System.out.println("url: "+StringEscapeUtils.unescapeJava(downloadUrl)+"\nmimeType: "+mimeType+"\nheight: "+height+"\ncontentLength: "+contentLength);
+        }
+
+        System.out.println(Arrays.toString(audioAndVideo));
         System.exit(0);
         return audioAndVideo;
     }
