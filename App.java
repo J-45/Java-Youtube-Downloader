@@ -152,7 +152,7 @@ public class App {
         }
 
         System.out.println(Arrays.toString(audioAndVideo));
-        System.exit(0);
+        // System.exit(0);
         return audioAndVideo;
     }
 }
