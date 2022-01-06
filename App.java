@@ -1,20 +1,25 @@
 import java.util.Arrays;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils; // https://mvnrepository.com/artifact/commons-lang/commons-lang/2.6
 
 // https://stackoverflow.com/questions/6020384/create-array-of-regex-matches
+// https://www.amitph.com/java-download-file-from-url/#Using_Plain_Java_IO
 
 public class App {
-
     public static void main(String[] urls) throws Exception, IOException {
         // System.out.println(Arrays.toString(urls));
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
         String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
         String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
@@ -34,6 +39,13 @@ public class App {
             } else {
                 System.out.println("URL: " + currentURl);
                 audioAndVideo = getDownloadUrl(currentURl);
+                String videoUrl = audioAndVideo[0];
+                String audioUrl = audioAndVideo[1];
+                // Files.delete(Paths.get("video.mp4"));
+                // Files.delete(Paths.get("audio.mp3"));
+                download(videoUrl,"video.mp4");
+                download(audioUrl,"audio.mp3");
+                System.exit(0);
             }
         }
     }
@@ -115,8 +127,8 @@ public class App {
         String[] audioAndVideo = new String[2];
         String htmlContent = fetchWebpage(url);
         String dataRegex = "\"url\":\"([^\"]+)\",\"mimeType\":\"((?:[^,]+))\",\"bitrate\":\\d+,(?:\"width\":\\d+,\"height\":(\\d+),)?(?:(?:[^,]+),){5}\"contentLength\":\"(\\d+)\"";
-        int videoLastContentLength = 0;
-        int audioLastContentLength = 0;
+        long videoLastContentLength = 0;
+        long audioLastContentLength = 0;
         boolean needAudioFile = false;
         Matcher matcher = Pattern
                 .compile(dataRegex)
@@ -126,23 +138,28 @@ public class App {
             String downloadUrl = StringEscapeUtils.unescapeJava(matcher.group(1));
             String mimeType = matcher.group(2).split(";")[0];
             String height = matcher.group(3);
-            int contentLength = Integer.parseInt(matcher.group(4));
-            if (Integer.parseInt(height) > 720){
-                needAudioFile = true;
-            }
-            if(needAudioFile){
-                if (height != null){
-                    if(contentLength > videoLastContentLength){
-                        videoLastContentLength = contentLength;
-                        audioAndVideo[0] = downloadUrl;
-                    }
-                }else{
-                    if(contentLength > audioLastContentLength){
-                        audioLastContentLength = contentLength;
-                        audioAndVideo[1] = downloadUrl;
-                    }
+            long contentLength = Integer.parseInt(matcher.group(4));
+
+
+
+            if (height != null){
+                if (Integer.parseInt(height) > 720) {
+                    needAudioFile = true;
+                }
+
+                if(contentLength > videoLastContentLength){
+                    videoLastContentLength = contentLength;
+                    audioAndVideo[0] = downloadUrl;
                 }
             }else{
+                if(contentLength > audioLastContentLength){
+                    audioLastContentLength = contentLength;
+                    audioAndVideo[1] = downloadUrl;
+                }
+            }
+
+            if(!needAudioFile)
+            {
                 audioAndVideo[1] = "";
             }
 
@@ -152,7 +169,31 @@ public class App {
         }
 
         System.out.println(Arrays.toString(audioAndVideo));
-        // System.exit(0); // debug & test
         return audioAndVideo;
+    }
+
+    public static void download(String dlLink, String filename) throws Exception, IOException {
+        
+        HttpClient httpClient = HttpClient.newBuilder().build();
+
+        HttpRequest httpRequest = HttpRequest
+                .newBuilder()
+                .uri(new URI(dlLink))
+                .setHeader("Accept", "*/*")
+                .setHeader("User-Agent", "curl/7.68.0")
+                .setHeader("Accept-Encoding", "")
+                .setHeader("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
+                .setHeader("Content-Type", "")
+                .GET()
+                .build();
+
+        HttpResponse<InputStream> response = httpClient
+                .send(httpRequest,
+                responseInfo -> HttpResponse.BodySubscribers.ofInputStream()
+                );
+
+        Files.copy(response.body(), Paths.get("/home/groot/Documents/yt_dl/src/"+filename));
+
+
     }
 }
