@@ -1,14 +1,17 @@
 import java.util.Arrays;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils; // https://mvnrepository.com/artifact/commons-lang/commons-lang/2.6
@@ -78,19 +81,29 @@ public class App {
     }
 
     public static String fetchWebpage(String url) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .setHeader("Accept", "*/*")
-                .setHeader("User-Agent", "curl/7.68.0")
-                .setHeader("Accept-Encoding", "")
-                .setHeader("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
-                .setHeader("Content-Type", "")
-                .GET() // GET is default
-                .build();
-        HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        // HttpClient client = HttpClient.newHttpClient();
+        // HttpRequest request = HttpRequest.newBuilder()
+        //         .uri(URI.create(url))
+        //         .setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+        //         .setHeader("Accept-Encoding", "gzip, deflate")
+        //         .setHeader("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0")
+        //         .setHeader("Accept-Encoding", "")
+        //         .setHeader("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
+        //         .setHeader("Content-Type", "")
+        //         .GET() // GET is default
+        //         .build();
+        // HttpResponse<String> response = client.send(request,
+        //         HttpResponse.BodyHandlers.ofString());
+        // return response.body();
+
+        String result = null;
+        try (InputStream inputStream = Runtime.getRuntime().exec("curl -s -b /home/groot/Documents/yt_dl/src/cookie.txt -c /home/groot/Documents/yt_dl/src/cookie.txt --http2 "+url+" -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --compressed").getInputStream();
+                Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
+            result = s.hasNext() ? s.next() : null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public static String getPlayslistId(String url) {
@@ -168,32 +181,20 @@ public class App {
             // System.out.println("url: "+StringEscapeUtils.unescapeJava(downloadUrl)+"\nmimeType: "+mimeType+"\nheight: "+height+"\ncontentLength: "+contentLength);
         }
 
-        System.out.println(Arrays.toString(audioAndVideo));
+        // System.out.println(Arrays.toString(audioAndVideo));
         return audioAndVideo;
     }
 
     public static void download(String dlLink, String filename) throws Exception, IOException {
-        
-        HttpClient httpClient = HttpClient.newBuilder().build();
-
-        HttpRequest httpRequest = HttpRequest
-                .newBuilder()
-                .uri(new URI(dlLink))
-                .setHeader("Accept", "*/*")
-                .setHeader("User-Agent", "curl/7.68.0")
-                .setHeader("Accept-Encoding", "")
-                .setHeader("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
-                .setHeader("Content-Type", "")
-                .GET()
-                .build();
-
-        HttpResponse<InputStream> response = httpClient
-                .send(httpRequest,
-                responseInfo -> HttpResponse.BodySubscribers.ofInputStream()
-                );
-
-        Files.copy(response.body(), Paths.get("/home/groot/Documents/yt_dl/src/"+filename));
-
+        System.out.println(dlLink);
+        String result = null;
+        try (InputStream inputStream = Runtime.getRuntime().exec("curl -L --http2 "+dlLink+" -c /home/groot/Documents/yt_dl/src/cookie.txt -b /home/groot/Documents/yt_dl/src/cookie.txt -o /home/groot/Documents/yt_dl/src/"+filename+" -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --compressed").getInputStream();
+                Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
+            result = s.hasNext() ? s.next() : null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(result);
 
     }
 }
