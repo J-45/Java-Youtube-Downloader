@@ -62,7 +62,7 @@ public class AppTest {
     @DisplayName("download url")
     void download_Test() throws IOException, Exception {
         String[] audioAndVideo = new String[2];
-        audioAndVideo = App.getDownloadUrl("https://www.youtube.com/watch?v=iKBs9l8jS6Q");
+        audioAndVideo = App.getDownloadUrl("https://www.youtube.com/watch?v=eQ3aHHOE_vY");
         App.download(audioAndVideo[0],"video.mp4");
     }
 }
