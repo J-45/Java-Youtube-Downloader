@@ -44,11 +44,15 @@ public class App {
                 audioAndVideo = getDownloadUrl(currentURl);
                 String videoUrl = audioAndVideo[0];
                 String audioUrl = audioAndVideo[1];
+                
                 // Files.delete(Paths.get("video.mp4"));
                 // Files.delete(Paths.get("audio.mp3"));
                 download(videoUrl,"video.mp4");
                 download(audioUrl,"audio.mp3");
-                System.exit(0);
+                if (audioUrl != ""){
+                    System.out.println("Joining...");
+                    join();
+                }
             }
         }
     }
@@ -97,7 +101,7 @@ public class App {
         // return response.body();
 
         String result = null;
-        try (InputStream inputStream = Runtime.getRuntime().exec("curl -s -b /home/groot/Documents/yt_dl/src/cookie.txt -c /home/groot/Documents/yt_dl/src/cookie.txt --http2 "+url+" -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --compressed").getInputStream();
+        try (InputStream inputStream = Runtime.getRuntime().exec("curl -s --http2 "+url+" -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --compressed").getInputStream();
                 Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
             result = s.hasNext() ? s.next() : null;
         } catch (IOException e) {
@@ -185,16 +189,25 @@ public class App {
         return audioAndVideo;
     }
 
-    public static void download(String dlLink, String filename) throws Exception, IOException {
+    public static void download(String dlLink, String filename){
         System.out.println(dlLink);
         String result = null;
-        try (InputStream inputStream = Runtime.getRuntime().exec("curl -L --http2 "+dlLink+" -c /home/groot/Documents/yt_dl/src/cookie.txt -b /home/groot/Documents/yt_dl/src/cookie.txt -o /home/groot/Documents/yt_dl/src/"+filename+" -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --compressed").getInputStream();
+        try (InputStream inputStream = Runtime.getRuntime().exec("curl -L --http3 "+dlLink+" -o /home/groot/Documents/yt_dl/src/"+filename+"").getInputStream();
                 Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
             result = s.hasNext() ? s.next() : null;
         } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println(result);
+    }
 
+    public static void join() {
+        String result = null;
+        try (InputStream inputStream = Runtime.getRuntime().exec("ffmpeg -i /home/groot/Documents/yt_dl/src/video.mp4 -i /home/groot/Documents/yt_dl/src/audio.mp3 -c:v copy -c:a copy /home/groot/Documents/yt_dl/src/output.mp4").getInputStream();
+                Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
+            result = s.hasNext() ? s.next() : null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
