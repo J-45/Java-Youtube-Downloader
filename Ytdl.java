@@ -1,8 +1,11 @@
 package eu.j45.youtube;
 
 // import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -12,6 +15,7 @@ import org.apache.commons.lang.StringEscapeUtils; // https://mvnrepository.com/a
 
 // https://stackoverflow.com/questions/6020384/create-array-of-regex-matches
 // https://www.amitph.com/java-download-file-from-url/#Using_Plain_Java_IO
+// https://stackoverflow.com/questions/44238554/how-to-run-ffmpeg-commandwindows-in-java
 
 public class Ytdl {
     public static void main(String[] urls) throws Exception, IOException {
@@ -20,7 +24,7 @@ public class Ytdl {
         String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
         String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
         String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
-        String[] data = new String[3];
+        String[] data = new String[5];
 
         for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; youtubeUrlsLoop = youtubeUrlsLoop + 1) {
             // System.out.println("loop 1:" + youtubeUrlsLoop);
@@ -39,11 +43,12 @@ public class Ytdl {
                 String videoUrl = data[0];
                 String audioUrl = data[1];
                 String title = data[2];
-                
+                int videoContentLength = Integer.parseInt(data[3]);
+                int audioContentLength = Integer.parseInt(data[4]);
                 // Files.delete(Paths.get("video.mp4"));
                 // Files.delete(Paths.get("audio.mp3"));
-                download(videoUrl,"video.mp4");
-                download(audioUrl,"audio.mp3");
+                download(videoUrl,"video.mp4",videoContentLength);
+                download(audioUrl,"audio.mp3",audioContentLength);
                 if (audioUrl != ""){
                     System.out.println("JOIN");
                     join(title+".mp4");
@@ -106,6 +111,19 @@ public class Ytdl {
         return result;
     }
 
+    public static String[] getUrlsFromplaylist(String url) throws IOException, InterruptedException {
+        List<String> allMatches = new ArrayList<String>();
+        String playlisId = getPlayslistId(url);
+        String htmlContent = fetchWebpage("https://www.youtube.com/playlist?list=" + playlisId);
+        Matcher matcher = Pattern
+                .compile("watchEndpoint\":\\{\"videoId\":\"([\\w-]+)\",\"playlistId\":\"\\w+\",\"index")
+                .matcher(htmlContent);
+        while (matcher.find()) {
+            allMatches.add("https://www.youtube.com/watch?v=" + matcher.group(1) + "&list=" + playlisId);
+        }
+        return allMatches.toArray(new String[0]);
+    }
+
     public static String getPlayslistId(String url) {
         String playlistId = "";
         Pattern pattern = Pattern.compile("watch\\?v=[\\w-]+&list=(\\w+)");
@@ -120,24 +138,11 @@ public class Ytdl {
         return playlistId;
     }
 
-    public static String[] getUrlsFromplaylist(String url) throws IOException, InterruptedException {
-        List<String> allMatches = new ArrayList<String>();
-        String playlisId = getPlayslistId(url);
-        String htmlContent = fetchWebpage("https://www.youtube.com/playlist?list=" + playlisId);
-        Matcher matcher = Pattern
-                .compile("watchEndpoint\":\\{\"videoId\":\"([\\w-]+)\",\"playlistId\":\"\\w+\",\"index")
-                .matcher(htmlContent);
-        while (matcher.find()) {
-            allMatches.add("https://www.youtube.com/watch?v=" + matcher.group(1) + "&list=" + playlisId);
-        }
-        return allMatches.toArray(new String[0]);
-    }
-
     public static String[] getData(String url) throws IOException, InterruptedException 
     {
         System.out.println("DOWNLOAD:" + url);
         List<String> allMatches = new ArrayList<String>();
-        String[] data = new String[3];
+        String[] data = new String[5];
         String htmlContent = fetchWebpage(url);
 
         Pattern patternTitle = Pattern.compile("<title>(.+) - YouTube</title>");
@@ -163,7 +168,7 @@ public class Ytdl {
             String mimeType = matcher.group(2).split(";")[0];
             String height = matcher.group(3);
             long contentLength = Integer.parseInt(matcher.group(4));
-
+            
 
 
             if (height != null){
@@ -191,25 +196,49 @@ public class Ytdl {
 
             // System.out.println("url: "+StringEscapeUtils.unescapeJava(downloadUrl)+"\nmimeType: "+mimeType+"\nheight: "+height+"\ncontentLength: "+contentLength);
         }
-
+        data[3] = Long.toString(videoLastContentLength);
+        data[4] = Long.toString(audioLastContentLength);
+        // System.out.println(data[3] + " - " + data[4]);
         // System.out.println(Arrays.toString(audioAndVideo));
         return data;
     }
 
-    public static boolean download(String dlLink, String filename){
+    public static boolean download(String dlLink, String filename,int contentLength) throws IOException{
         System.out.println(dlLink);
         String result = null;
         try (InputStream inputStream = Runtime.getRuntime().exec("curl -L -C - --speed-limit 1024 --speed-time 5 --retry 7 --http3 "+dlLink+" -o /home/groot/Documents/yt_dl/src/"+filename).getInputStream();
                 Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
             result = s.hasNext() ? s.next() : null;
-            return true;
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        File file = new File("/home/groot/Documents/yt_dl/src/"+filename);
+        // System.out.println(file.length() + " - " +contentLength);
+        
+
+        if(file.length() == contentLength){
+            return true;
+        }else{
             return false;
         }
     }
 
-    public static void join(String filename) throws IOException {
-        Runtime.getRuntime().exec("ffmpeg -i /home/groot/Documents/yt_dl/src/video.mp4 -i /home/groot/Documents/yt_dl/src/audio.mp3 -c:v copy -c:a copy /home/groot/Documents/yt_dl/src/"+filename);
-    }
+    public static boolean join(String filename) throws IOException, InterruptedException {
+        filename = filename.replace('/', '-');
+        File outputFile = new File("/home/groot/Documents/yt_dl/src/"+filename);
+
+        // String cmd = "ffmpeg -i '/home/groot/Documents/yt_dl/src/video.mp4' -i '/home/groot/Documents/yt_dl/src/audio.mp3' -c:v copy -c:a copy '"+outputFile+"' 2>&1";
+        String[] cmd = {"ffmpeg","-i","/home/groot/Documents/yt_dl/src/video.mp4","-i","/home/groot/Documents/yt_dl/src/audio.mp3","-c:v","copy","-c:a","copy",outputFile.toString()};
+        
+        Process process = Runtime.getRuntime().exec(cmd);                    
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));                                          
+        // String s;                                                                
+        // while ((s = reader.readLine()) != null) {                                
+        //     System.out.println("Script output: " + s);                             
+        // }
+
+        System.out.println(cmd);  
+        System.out.println(outputFile+" exists:"+ outputFile.exists());
+        return outputFile.exists();
+        }
 }

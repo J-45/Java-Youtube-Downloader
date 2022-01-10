@@ -17,7 +17,8 @@ public class Ytdl_Test {
     @Test
     @DisplayName("test main")
     void main_Test()  throws Exception{
-        Ytdl.main(testUrls);
+        String[] testMain = {"https://www.youtube.com/watch?v=3PcIJKd1PKU"};
+        Ytdl.main(testMain);
     }
 
     @Test
@@ -58,6 +59,10 @@ public class Ytdl_Test {
         String videoLink = data[0];
         String audioLink = data[1];
         String title = data[2];
+        int videoContentLength = Integer.parseInt(data[3]);
+        int audioContentLength = Integer.parseInt(data[4]);
+        Assert.assertEquals(videoContentLength, 1122164703);
+        Assert.assertEquals(audioContentLength, 11330218);
         Assert.assertTrue(videoLink.contains("videoplayback"));
         Assert.assertTrue(audioLink.contains("videoplayback"));
         Assert.assertEquals("Top 100 3D Renders from the Internet&#39;s Largest CG Challenge | Alternate Realities", title);
@@ -66,11 +71,29 @@ public class Ytdl_Test {
     @Test
     @DisplayName("download url")
     void download_Test() throws IOException, Exception {
-        String[] audioAndVideo = new String[2];
-        audioAndVideo = Ytdl.getData("https://www.youtube.com/watch?v=3PcIJKd1PKU");
-        String videoLink = audioAndVideo[0];
-        String audioLink = audioAndVideo[1];
-        Assert.assertTrue(Ytdl.download(videoLink,"video.mp4"));
-        Assert.assertTrue(Ytdl.download(audioLink,"audio.mp3"));
+        String[] data = new String[5];
+        data = Ytdl.getData("https://www.youtube.com/watch?v=3PcIJKd1PKU");
+        String videoLink = data[0];
+        String audioLink = data[1];
+        int videoContentLength = Integer.parseInt(data[3]);
+        int audioContentLength = Integer.parseInt(data[4]);
+        Assert.assertTrue(Ytdl.download(videoLink,"video.mp4",videoContentLength));
+        Assert.assertTrue(Ytdl.download(audioLink,"audio.mp3",audioContentLength));
+    }
+
+    @Test
+    @DisplayName("join audio and video")
+    void join_Test() throws IOException, Exception {
+        String[] data = new String[5];
+        data = Ytdl.getData("https://www.youtube.com/watch?v=3PcIJKd1PKU");
+        String videoLink = data[0];
+        String audioLink = data[1];
+        int videoContentLength = Integer.parseInt(data[3]);
+        int audioContentLength = Integer.parseInt(data[4]);
+        Ytdl.download(videoLink,"video.mp4",videoContentLength);
+        Ytdl.download(audioLink,"audio.mp3",audioContentLength);
+        String title = data[2];
+        
+        Assert.assertTrue(Ytdl.join(title+".mp4"));
     }
 }
