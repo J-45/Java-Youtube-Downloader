@@ -9,18 +9,18 @@ import java.io.IOException;
 
 public class YtdlTest {
 
-    String[] testUrls = {"","https://stackoverflow.com/",
+    private String[] testUrls = {"","https://stackoverflow.com/",
     		"https://www.youtube.com/watch?v=_SnGxw13QxU",
     		"https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m",
     		"https://youtu.be/watch?v=3PcIJKd1PKU",
     		"http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
-    String[] goodUrls = {"https://www.youtube.com/watch?v=_SnGxw13QxU", 
+    private String[] goodUrls = {"https://www.youtube.com/watch?v=_SnGxw13QxU", 
     		"https://www.youtube.com/watch?v=KJgsSFOSQv0&list=PLWKjhJtqVAbmUE5IqyfGYEYjrZBYzaT4m",
     		"https://youtu.be/watch?v=3PcIJKd1PKU",
     		"http://www.youtube.com/watch?v=wjAdxAbmQNM&list=RDwjAdxAbmQNM&=8ds1v887s8d7f8d"};
-    String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"};
-    String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
-    String[] testMain = {"https://www.youtube.com/watch?v=3PcIJKd1PKU"};
+    private String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"};
+    private String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
+    private String[] testMain = {"https://www.youtube.com/watch?v=3PcIJKd1PKU"};
 
     @Test
     @DisplayName("test main")
@@ -80,7 +80,7 @@ public class YtdlTest {
     @DisplayName("download url")
     void download_Test() throws IOException, Exception {
         String[] data = new String[5];
-        data = Ytdl.getData("https://www.youtube.com/watch?v=3PcIJKd1PKU");
+        data = Ytdl.getData(this.testMain[0]);
         String videoLink = data[0];
         String audioLink = data[1];
         int videoContentLength = Integer.parseInt(data[3]);
@@ -94,7 +94,7 @@ public class YtdlTest {
     void join_Test() throws IOException, Exception {
         // prep
         String[] data = new String[5];
-        data = Ytdl.getData("https://www.youtube.com/watch?v=3PcIJKd1PKU");
+        data = Ytdl.getData(this.testMain[0]);
         String videoLink = data[0];
         String audioLink = data[1];
         String title = data[2];
