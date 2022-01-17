@@ -226,7 +226,7 @@ public class Ytdl {
     public static boolean join(String filename) throws IOException, InterruptedException {
         filename = filename.replace('/', '-');
         File outputFile = new File("/home/groot/Documents/yt_dl/src/"+filename);
-        String[] cmd = {"ffmpeg","-i","/home/groot/Documents/yt_dl/src/video.mp4","-i","/home/groot/Documents/yt_dl/src/audio.mp3","-c:v","copy","-c:a","copy",outputFile.toString()};
+        String[] cmd = {"ffmpeg","-y","-i","/home/groot/Documents/yt_dl/src/video.mp4","-i","/home/groot/Documents/yt_dl/src/audio.mp3","-c:v","copy","-c:a","copy",outputFile.toString()};
         
         Process process = Runtime.getRuntime().exec(cmd);                    
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));                                          
