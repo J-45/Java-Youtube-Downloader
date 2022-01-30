@@ -25,26 +25,28 @@ public class Ytdl {
         String youtubePlaylistUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=\\w+&list=\\w+";
         String[] youtubeUrls = keepYoutubeUrlsOnly(youtubeUrlRegex, urls);
         String[] data = new String[5];
-
-        for (int youtubeUrlsLoop = 0; youtubeUrlsLoop < youtubeUrls.length; youtubeUrlsLoop = youtubeUrlsLoop + 1) {
-            // System.out.println("loop 1:" + youtubeUrlsLoop);
-            String currentURl = youtubeUrls[youtubeUrlsLoop];
+        String[] playlistUrls;
+        String videoUrl;
+        String audioUrl;
+        String title;
+        int videoContentLength;
+        int audioContentLength;
+        
+        for (String currentURl : youtubeUrls) {
             if (currentURl.matches(youtubePlaylistUrlRegex)) {
                 System.out.println("PLAYLIST: " + currentURl);
-                String[] playlistUrls = getUrlsFromplaylist(currentURl);
-                for (int playlistLoopCount = 0; playlistLoopCount < playlistUrls.length; playlistLoopCount++) {
-                    // System.out.println("loop 2:" + playlistLoopCount);
-                    String singlePlaylistUrl = playlistUrls[playlistLoopCount];
+                playlistUrls = getUrlsFromplaylist(currentURl);
+                for (String singlePlaylistUrl: playlistUrls) {
                     data = getData(singlePlaylistUrl);
                 }
             } else {
                 System.out.println("URL: " + currentURl);
                 data = getData(currentURl);
-                String videoUrl = data[0];
-                String audioUrl = data[1];
-                String title = data[2];
-                int videoContentLength = Integer.parseInt(data[3]);
-                int audioContentLength = Integer.parseInt(data[4]);
+                videoUrl = data[0];
+                audioUrl = data[1];
+                title = data[2];
+                videoContentLength = Integer.parseInt(data[3]);
+                audioContentLength = Integer.parseInt(data[4]);
                 // Files.delete(Paths.get("video.mp4"));
                 // Files.delete(Paths.get("audio.mp3"));
                 download(videoUrl,"video.mp4",videoContentLength);
@@ -57,14 +59,12 @@ public class Ytdl {
         }
     }
 
-
     public static String[] keepYoutubeUrlsOnly(String youtubeUrlRegex, String[] urls) {
         int numberOfValidUrls = countValidUrls(youtubeUrlRegex, urls);
         int addedUrl = 0;
         String[] youtubeUrls = new String[numberOfValidUrls];
-
-        for (int index = 0; index < urls.length; ++index) {
-            String url = urls[index];
+        
+        for (String url: urls) {
             if (url.matches(youtubeUrlRegex)) {
                 youtubeUrls[addedUrl] = url;
                 addedUrl++;
@@ -75,10 +75,9 @@ public class Ytdl {
 
     public static int countValidUrls(String youtubeUrlRegex, String[] args) {
         int goodUrlsCounter = 0;
-        for (int index = 0; index < args.length; ++index) {
-            String url = args[index];
+
+        for (String url: args) {
             if (url.matches(youtubeUrlRegex)) {
-                // System.out.println("urls[" + index + "]: " + url);
                 goodUrlsCounter++;
             }
         }
@@ -205,10 +204,10 @@ public class Ytdl {
 
     public static boolean download(String dlLink, String filename,int contentLength) throws IOException{
         System.out.println(dlLink);
-        String result = null;
+//        String result = null;
         try (InputStream inputStream = Runtime.getRuntime().exec("curl -L -C - --speed-limit 1024 --speed-time 5 --retry 7 --http3 "+dlLink+" -o /home/groot/Documents/yt_dl/src/"+filename).getInputStream();
                 Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {
-            result = s.hasNext() ? s.next() : null;
+//            result = s.hasNext() ? s.next() : null;
         } catch (IOException e) {
             e.printStackTrace();
         }
