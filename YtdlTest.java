@@ -21,7 +21,14 @@ public class YtdlTest {
     private String[] goodPlaylistUrls = {"https://www.youtube.com/watch?v=wfWxdh-_k_4&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx","https://www.youtube.com/watch?v=C5cnZ-gZy2I&list=PLWKjhJtqVAbkq5Oh8ERRJ1aPZK2NKBSRx"};
     private String youtubeUrlRegex = "https?://(www\\.)?(youtube\\.com|youtu\\.be)/watch\\?v=[\\w&=]+";
     private String[] testMain = {"https://www.youtube.com/watch?v=3PcIJKd1PKU"};
-
+    
+    String[] data = new String[5];
+    String videoLink;
+    String audioLink;
+    String title;
+    int videoContentLength;
+    int audioContentLength;
+    
     @Test
     @DisplayName("test main")
     void main_Test()  throws Exception{
@@ -61,13 +68,12 @@ public class YtdlTest {
     @Test
     @DisplayName("get download url")
     void getData_Test() throws IOException, Exception {
-        String[] data = new String[2];
-        data = Ytdl.getData("https://www.youtube.com/watch?v=iKBs9l8jS6Q");
-        String videoLink = data[0];
-        String audioLink = data[1];
-        String title = data[2];
-        int videoContentLength = Integer.parseInt(data[3]);
-        int audioContentLength = Integer.parseInt(data[4]);
+        this.data = Ytdl.getData("https://www.youtube.com/watch?v=iKBs9l8jS6Q");
+        this.videoLink = data[0];
+        this.audioLink = data[1];
+        this.title = data[2];
+        this.videoContentLength = Integer.parseInt(data[3]);
+        this.audioContentLength = Integer.parseInt(data[4]);
         System.out.println(data);
         Assert.assertEquals(videoContentLength, 1122164703);
         Assert.assertEquals(audioContentLength, 11330218);
@@ -79,12 +85,11 @@ public class YtdlTest {
     @Test
     @DisplayName("download url")
     void download_Test() throws IOException, Exception {
-        String[] data = new String[5];
-        data = Ytdl.getData(this.testMain[0]);
-        String videoLink = data[0];
-        String audioLink = data[1];
-        int videoContentLength = Integer.parseInt(data[3]);
-        int audioContentLength = Integer.parseInt(data[4]);
+        this.data = Ytdl.getData(this.testMain[0]);
+        this.videoLink = data[0];
+        this.audioLink = data[1];
+        this.videoContentLength = Integer.parseInt(data[3]);
+        this.audioContentLength = Integer.parseInt(data[4]);
         Assert.assertTrue(Ytdl.download(videoLink,"video.mp4",videoContentLength));
         Assert.assertTrue(Ytdl.download(audioLink,"audio.mp3",audioContentLength));
     }
@@ -93,13 +98,12 @@ public class YtdlTest {
     @DisplayName("join audio and video")
     void join_Test() throws IOException, Exception {
         // prep
-        String[] data = new String[5];
-        data = Ytdl.getData(this.testMain[0]);
-        String videoLink = data[0];
-        String audioLink = data[1];
-        String title = data[2];
-        int videoContentLength = Integer.parseInt(data[3]);
-        int audioContentLength = Integer.parseInt(data[4]);
+    	this.data = Ytdl.getData(this.testMain[0]);
+    	this.videoLink = data[0];
+    	this.audioLink = data[1];
+    	this.title = data[2];
+    	this.videoContentLength = Integer.parseInt(data[3]);
+    	this.audioContentLength = Integer.parseInt(data[4]);
         Ytdl.download(videoLink,"video.mp4",videoContentLength);
         Ytdl.download(audioLink,"audio.mp3",audioContentLength);
         // test
